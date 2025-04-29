@@ -130,7 +130,6 @@ The application outputs solution fields in VTK format that can be viewed with vi
 - `massPhiMatrixSolver.hpp`: High-level driver for solving the mass-phi system
 - `calculateMassMatrix.hpp`: Constructs the mass matrix for the mesh
 - `calculatePhiMatrix.hpp`: Builds the $\phi_i(\mathbf{x}_k)$ matrix
-- `calculatePhiMatrix.hpp`: Builds the phi_i(x_k) matrix
 - `massMatrixIntegrator.hpp`: Integrates shape functions for mass matrix computation
 
 > [!INFO]
