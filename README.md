@@ -146,16 +146,16 @@ The application outputs solution fields in VTK format that can be viewed with vi
 ### Mathematical Framework
 
 The mapping operation solves the system:
-```
-\[
+$$
 M\,x \;=\; \Phi\,f
-\]
-```
+$$
+
 where:
-- M is the mass matrix on the target mesh
-- Φ is the phi matrix ($\phi_{i}(\mathbf{x}_k)$)
-- f is the value at source points
-- x is the solution vector to be determined
+
+- \(M\) is the mass matrix on the target mesh
+- \(\Phi\) is the phi matrix \(\bigl(\phi_{i}(\mathbf{x}_k)\bigr)\)
+- \(f\) is the vector of values at the source points
+- \(x\) is the solution vector to be determined
 
 > [!TIP]
 > For large problems, consider using iterative solvers like conjugate gradient (`-ksp_type cg`) with appropriate preconditioners.
