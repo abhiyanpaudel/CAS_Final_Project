@@ -154,7 +154,7 @@ M x = Φ f
 where:
 
 - M is the mass matrix on the target mesh
-- Φ is the phi matrix ($\phi_i(\mathbf{x}_k)$)
+- Φ is the phi matrix (φᵢ(𝐱ₖ))
 - f is the vector of values at the source points
 - x is the solution vector to be determined
 
