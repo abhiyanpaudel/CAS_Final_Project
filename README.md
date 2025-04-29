@@ -147,13 +147,15 @@ The application outputs solution fields in VTK format that can be viewed with vi
 
 The mapping operation solves the system:
 ```
-M x = Φ f
+\[
+M\,x \;=\; \Phi\,f
+\]
 ```
 where:
 - M is the mass matrix on the target mesh
-- Φ is the interpolation matrix from source to target
+- Φ is the phi matrix ($\phi_{i}(\mathbf{x}_k)$)
 - f is the value at source points
-- x is the resulting field on the target mesh
+- x is the solution vector to be determined
 
 > [!TIP]
 > For large problems, consider using iterative solvers like conjugate gradient (`-ksp_type cg`) with appropriate preconditioners.
@@ -163,14 +165,8 @@ where:
 The provided test meshes in `create_mesh/` directory can be used for verifying the implementation. Running the mapper with these meshes serves as a basic functional test.
 
 > [!INFO]
-> More comprehensive test cases will be added in future updates.
+> More comprehensive test cases will be added.
 
-## 👥 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-> [!TIP]
-> When developing, use the debug print statements in the code for troubleshooting. Add `#define DEBUG` to enable additional output.
 
 ## 📝 License
 
