@@ -59,24 +59,55 @@ export PCMS_DIR=/path/to/pcms/install
 
 ### Building from Source
 
+For convenience, a configuration script `config.sh` is provided that sets up all necessary environment variables and build parameters:
+
 ```bash
 # Clone the repository
-git clone git@github.com:abhiyanpaudel/CAS_Final_Project.git
-cd CAS_Final_Project
+git clone https://github.com/username/particle2mesh_map.git
+cd particle2mesh_map
 
-# Create build directory
-mkdir -p build
-cd build
+# Run the configuration script
+chmod +x config.sh
+./config.sh
+```
 
-# Configure with CMake
-cmake ..
+This script:
+1. Sources the necessary environment modules from `/lore/paudea/scripts/loads-rhel9.sh`
+2. Sets up environment variables for dependencies
+3. Configures the build with CMake using CUDA support via Kokkos
+4. Builds the project with parallel compilation 
 
-# Build
-make
+If you need to customize the build, you can modify `config.sh` or set the following environment variables before running it:
+
+```bash
+# Custom dependency paths (optional)
+export SOURCE_DIR=/path/to/sources
+export BUILD_DIR=/path/to/build
+export DEVICE_ARCH=your-device-architecture
+export DEPENDENCY_DIR=/path/to/dependencies
+```
+
+For manual build configuration, use CMake with appropriate options:
+
+```bash
+cmake -S . -B build \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_CXX_COMPILER=/path/to/kokkos/nvcc_wrapper \
+    -DCMAKE_C_COMPILER=`which mpicc` \
+    -DOmega_h_USE_Kokkos=ON \
+    -DOmega_h_USE_CUDA=ON \
+    -DOmega_h_DIR=/path/to/omega_h/install \
+    -DKokkos_ROOT=/path/to/kokkos/install \
+    -Dpcms_ROOT=/path/to/pcms/install \
+    -Dmeshfields_DIR=/path/to/meshfields/install \
+    -DPETSC_DIR=/path/to/petsc \
+    -DPETSC_ARCH=arch-name
+
+cmake --build build -j8
 ```
 
 > [!TIP]
-> Use `make -j N` where N is the number of cores to speed up compilation.
+> The `-j8` flag enables parallel compilation with 8 threads. Adjust the number based on your system's capabilities.
 
 ## 🚀 Usage
 
