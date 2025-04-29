@@ -56,7 +56,7 @@ Required libraries:
 # Clone the repository
 git clone git@github.com:abhiyanpaudel/CAS_Final_Project.git
 cd CAS_Final_Project
-
+```
 
 If you need to manually configure the build, here's the CMake command that `config.sh` uses:
 
