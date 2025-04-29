@@ -1,16 +1,13 @@
 # 🔄 Particle to Mesh Mapping (particle2mesh_map)
 
-![Badge Status: Alpha](https://img.shields.io/badge/Status-Alpha-orange.svg)
 ![Badge License: BSD 3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)
 
-A high-performance parallel utility for mapping particle-based data to finite element meshes using PETSc and Kokkos acceleration.
+A high-performance parallel utility for mapping point data (ignores mesh information) to finite element meshes using PETSc and Kokkos acceleration.
 
-> [!IMPORTANT]  
-> This software is currently in **alpha status**. APIs may change in future releases as functionality is expanded.
 
 ## 🔍 Overview
 
-This software implements efficient algorithms for projecting data from distributed particle sets onto finite element meshes using mass-conservative interpolation. It uses GPU acceleration through Kokkos and advanced sparse linear algebra operations via PETSc to enable high-performance mapping between arbitrary particle/mesh distributions.
+This library provides high‐performance, conservative field transfer from distributed particle sets to finite‐element meshes using a Galerkin projection.  It leverages GPU parallelism through Kokkos and scalable sparse linear algebra from PETSc to map data efficiently between arbitrary particle and mesh distributions.
 
 Key features:
 - ⚡ Fast particle-to-mesh (P2M) data interpolation
@@ -64,8 +61,8 @@ export PCMS_DIR=/path/to/pcms/install
 
 ```bash
 # Clone the repository
-git clone https://github.com/username/particle2mesh_map.git
-cd particle2mesh_map
+git clone git@github.com:abhiyanpaudel/CAS_Final_Project.git
+cd CAS_Final_Project
 
 # Create build directory
 mkdir -p build
@@ -132,7 +129,8 @@ The application outputs solution fields in VTK format that can be viewed with vi
 - `main.cpp`: Entry point with mesh loading and function evaluation
 - `massPhiMatrixSolver.hpp`: High-level driver for solving the mass-phi system
 - `calculateMassMatrix.hpp`: Constructs the mass matrix for the mesh
-- `calculatePhiMatrix.hpp`: Builds the phi (interpolation) matrix
+- `calculatePhiMatrix.hpp`: Builds the $\phi_i(\mathbf{x}_k)$ matrix
+- `calculatePhiMatrix.hpp`: Builds the phi_i(x_k) matrix
 - `massMatrixIntegrator.hpp`: Integrates shape functions for mass matrix computation
 
 > [!INFO]
