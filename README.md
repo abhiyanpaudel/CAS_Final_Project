@@ -36,7 +36,7 @@ Required libraries:
   GPU-friendly storage and interpolation of scalar/vector fields on unstructured meshes.
 
 - [PCMS](https://github.com/SCOREC/pcms) (branch `develop`, commit `00eeca1`):  
-  Parallel coupler providing conservative, Galerkin-based field transfer between particle sets and finite-element meshes.
+  Parallel coupler providing with efficient data and field tyransfer operations 
 
 - [Gmsh](https://github.com/sasobadovinac/gmsh) (branch `main`, commit `cd594101`):  
   3D finite-element mesh generator with built-in pre- and post-processing tools.
@@ -49,48 +49,15 @@ Required libraries:
 > [!TIP]
 > Make sure to load appropriate modules for your system before installing dependencies. On SCOREC machines, you may need to load gcc, cuda, and mpi modules.
 
-Ensure you have the required dependencies installed. The following paths need to be set:
-
-```bash
-# PETSc
-export PETSC_DIR=/path/to/petsc/install
-export PETSC_ARCH=arch-linux-c-debug
-
-# Omega_h
-export OMEGA_H_DIR=/path/to/omega_h/install
-
-# Kokkos
-export KOKKOS_DIR=/path/to/kokkos/install
-
-# MeshField
-export MESHFIELD_DIR=/path/to/meshfield/install
-
-# PCMS
-export PCMS_DIR=/path/to/pcms/install
-```
 
 > [!INFO]
 > If you're working on a system with pre-installed libraries, check with your system administrator for the correct paths to use.
 
-### Building from Source
-
-The project uses CMake for build configuration. The easiest way to build is using the provided `config.sh` script:
-
 ```bash
 # Clone the repository
-git clone https://github.com/username/particle2mesh_map.git
-cd particle2mesh_map
+git clone git@github.com:abhiyanpaudel/CAS_Final_Project.git
+cd CAS_Final_Project
 
-# Make the config script executable and run it
-chmod +x config.sh
-./config.sh
-```
-
-The `config.sh` script:
-- Loads necessary environment modules for RHEL9
-- Sets up the build with CUDA support through Kokkos
-- Configures all dependencies with the correct paths
-- Builds the project with parallel compilation
 
 If you need to manually configure the build, here's the CMake command that `config.sh` uses:
 
@@ -108,7 +75,7 @@ cmake -S . -B build \
     -DADIOS2_ROOT=/path/to/adios2/install/ \
     -DCMAKE_BUILD_TYPE=Debug \
     -Dmeshfields_DIR=/path/to/meshField/install/lib64/cmake/meshfields/ \
-    -DPETSC_ARCH=linux-gnu-gpu-kokkos \
+    -DPETSC_ARCH=/path/to/petsc_arch/ \
     -DPETSC_DIR=/path/to/petsc/ \
     -DCatch2_ROOT=/path/to/Catch2/install/
 
@@ -211,7 +178,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 This project is licensed under the BSD 3-Clause License:
 
 ```
-Copyright (c) 2023-2025, The particle2mesh_map Authors.
+Copyright (c) 2023-2025, The particle2MeshMap Authors.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
