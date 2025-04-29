@@ -201,11 +201,12 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
-- 🔄 The Omega_h and MeshField teams for their robust mesh handling libraries
-- 📊 PETSc development team for their high-performance linear algebra framework
-- ⚡ Kokkos team for their performance portability layer
+- The Omega_h and MeshField teams for their robust mesh handling libraries
+- PETSc development team for their high-performance linear algebra framework
+- Kokkos team for their performance portability layer
+- The developers of the mesh generating scripts in the create_mesh directory that facilitate testing and validation
 
 > [!TIP]
 > Check the documentation of each dependency for more detailed information on their usage and capabilities.
