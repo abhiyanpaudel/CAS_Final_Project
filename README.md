@@ -49,7 +49,6 @@ Required libraries:
 > [!TIP]
 > Make sure to load appropriate modules for your system before installing dependencies. On SCOREC machines, you may need to load gcc, cuda, and mpi modules.
 
-
 > [!INFO]
 > If you're working on a system with pre-installed libraries, check with your system administrator for the correct paths to use.
 
