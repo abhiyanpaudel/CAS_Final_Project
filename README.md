@@ -19,13 +19,28 @@ Key features:
 ## 📚 Dependencies
 
 Required libraries:
-- [Omega_h](https://github.com/sandialabs/omega_h) - Unstructured mesh adaptation library
-- [PETSc](https://petsc.org/) - Portable, Extensible Toolkit for Scientific Computation
-- [Kokkos](https://github.com/kokkos/kokkos) - Performance portability programming model
-- [MeshField](https://github.com/SCOREC/meshFields) - Mesh-based field discretization
-- [PCMS](https://github.com/SCOREC/pcms) - Particle to continuum mapping library
-- [Gmsh](https://gmsh.info/) - Mesh generation (for creating test meshes)
-- MPI - Message Passing Interface
+
+- [Omega_h](https://github.com/sandialabs/omega_h) (branch `main`, commit `4764a9`):  
+  Unstructured mesh operations library for parallel adaptive mesh refinement, partitioning, and I/O.
+
+- [PETSc](https://github.com/petsc/petsc) (branch `release`, commit `d31fe3`):  
+  Portable, Extensible Toolkit for Scientific Computation—scalable solvers and data structures for PDEs.
+
+- [Kokkos](https://github.com/kokkos/kokkos) (branch `develop`, commit `4764a9`):  
+  C++ programming model that delivers performance portability across CPUs, NVIDIA/AMD GPUs, and other architectures.
+
+- [Kokkos-Kernels](https://github.com/kokkos/kokkos-kernels) (branch `release-candidate-4.4.01`, commit `336ee5`):  
+  Performance-portable math kernels (sparse/dense linear algebra, graph routines) optimized for use with Kokkos and PETSc.
+
+- [MeshField](https://github.com/SCOREC/meshFields) (branch `cws/integration`, commit `237bfb`):  
+  GPU-friendly storage and interpolation of scalar/vector fields on unstructured meshes.
+
+- [PCMS](https://github.com/SCOREC/pcms) (branch `develop`, commit `00eeca1`):  
+  Parallel coupler providing conservative, Galerkin-based field transfer between particle sets and finite-element meshes.
+
+- [Gmsh](https://github.com/sasobadovinac/gmsh) (branch `main`, commit `cd594101`):  
+  3D finite-element mesh generator with built-in pre- and post-processing tools.
+
 
 ## 🛠️ Installation
 
@@ -59,55 +74,51 @@ export PCMS_DIR=/path/to/pcms/install
 
 ### Building from Source
 
-For convenience, a configuration script `config.sh` is provided that sets up all necessary environment variables and build parameters:
+The project uses CMake for build configuration. The easiest way to build is using the provided `config.sh` script:
 
 ```bash
 # Clone the repository
 git clone https://github.com/username/particle2mesh_map.git
 cd particle2mesh_map
 
-# Run the configuration script
+# Make the config script executable and run it
 chmod +x config.sh
 ./config.sh
 ```
 
-This script:
-1. Sources the necessary environment modules from `/lore/paudea/scripts/loads-rhel9.sh`
-2. Sets up environment variables for dependencies
-3. Configures the build with CMake using CUDA support via Kokkos
-4. Builds the project with parallel compilation 
+The `config.sh` script:
+- Loads necessary environment modules for RHEL9
+- Sets up the build with CUDA support through Kokkos
+- Configures all dependencies with the correct paths
+- Builds the project with parallel compilation
 
-If you need to customize the build, you can modify `config.sh` or set the following environment variables before running it:
-
-```bash
-# Custom dependency paths (optional)
-export SOURCE_DIR=/path/to/sources
-export BUILD_DIR=/path/to/build
-export DEVICE_ARCH=your-device-architecture
-export DEPENDENCY_DIR=/path/to/dependencies
-```
-
-For manual build configuration, use CMake with appropriate options:
+If you need to manually configure the build, here's the CMake command that `config.sh` uses:
 
 ```bash
 cmake -S . -B build \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_CXX_COMPILER=/path/to/kokkos/nvcc_wrapper \
+    -DCMAKE_CXX_COMPILER=/path/to/kokkos-meshField/install/bin/nvcc_wrapper \
     -DCMAKE_C_COMPILER=`which mpicc` \
     -DOmega_h_USE_Kokkos=ON \
     -DOmega_h_USE_CUDA=ON \
-    -DOmega_h_DIR=/path/to/omega_h/install \
-    -DKokkos_ROOT=/path/to/kokkos/install \
-    -Dpcms_ROOT=/path/to/pcms/install \
-    -Dmeshfields_DIR=/path/to/meshfields/install \
-    -DPETSC_DIR=/path/to/petsc \
-    -DPETSC_ARCH=arch-name
+    -DOmega_h_DIR=/path/to/omega_h-meshField/install/lib64/cmake/Omega_h/ \
+    -DKokkos_ROOT=/path/to/kokkos-meshField/install/ \
+    -Dpcms_ROOT=/path/to/pcms-meshField/install/ \
+    -Dperfstubs_DIR=/path/to/perfstubs/install/lib/cmake/ \
+    -DADIOS2_ROOT=/path/to/adios2/install/ \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -Dmeshfields_DIR=/path/to/meshField/install/lib64/cmake/meshfields/ \
+    -DPETSC_ARCH=linux-gnu-gpu-kokkos \
+    -DPETSC_DIR=/path/to/petsc/ \
+    -DCatch2_ROOT=/path/to/Catch2/install/
 
 cmake --build build -j8
 ```
 
+Replace the `/path/to/` entries with the actual paths on your system. For the reference system, these paths are set relative to the environment variables in `config.sh`.
+
 > [!TIP]
-> The `-j8` flag enables parallel compilation with 8 threads. Adjust the number based on your system's capabilities.
+> The `-j8` flag enables parallel compilation with 8 threads. Adjust based on your system's capabilities.
 
 ## 🚀 Usage
 
