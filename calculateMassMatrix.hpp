@@ -1,5 +1,7 @@
-#include <iostream>
+#ifndef COMPUTING_AT_SCALE_CALCULATE_MASS_MATRIX_HPP
+#define COMPUTING_AT_SCALE_CALCULATE_MASS_MATRIX_HPP
 
+#include <iostream>
 #include <Omega_h_adapt.hpp>
 #include <Omega_h_array_ops.hpp>
 #include <Omega_h_build.hpp>
@@ -66,19 +68,7 @@ static PetscErrorCode CreateMatrix(Omega_h::Mesh& mesh, Mat *A) {
 }
 
 
-int main(int argc, char** argv) {
-  auto lib = Library(&argc, &argv); //initializes MPI
-  PetscCall(PetscInitialize(&argc,&argv,NULL,NULL));
-  feenableexcept(FE_ALL_EXCEPT & ~FE_INEXACT);  // Enable all floating point exceptions but FE_INEXACT
-  if( argc < 3 ) {
-    fprintf(stderr, "Usage: %s inputMesh.osh outputMeshPrefix\n", argv[0]);
-    exit(EXIT_FAILURE);
-  }
-  auto world = lib.world();
-  Omega_h::Mesh mesh(&lib);
-  Omega_h::binary::read(argv[1], world, &mesh);
-  const auto prefix = std::string(argv[2]);
-  std::cout << "input mesh: " << argv[1] << " outputMeshPrefix: " << prefix << "\n";
+inline PetscErrorCode calculateMassMatrix(Omega_h::Mesh& mesh, Mat *mass_out){ 
 
   MeshField::OmegahMeshField<ExecutionSpace, MeshField::KokkosController> omf(
         mesh);
@@ -101,11 +91,15 @@ int main(int argc, char** argv) {
   std::cerr << "Matrix type is kokkos: " << is_kokkos << "\n";
   PetscCall(MatZeroEntries(mass));
   PetscCall(MatSetValuesCOO(mass, elmMassMatrix.data(), INSERT_VALUES)); //FIXME fails here on gpu, calls into host implementation... AFAIK, petsc checks the type of the input array of values to decide which backend to use...
+ // 
   if( mesh.nelems() < 10 ) {
     PetscCall(MatView(mass, PETSC_VIEWER_STDOUT_WORLD));
   }
   PetscCall(MatDestroy(&mass));
   PetscCall(PetscFinalize());
 
-  return 0;
+  *mass_out = mass;
+  PetscFunctionReturn(PETSC_SUCCESS);
 }
+
+#endif 
