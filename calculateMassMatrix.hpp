@@ -27,13 +27,13 @@
 #include <Omega_h_timer.hpp>
 #include <iomanip> //precision
 #include <iostream>
+#include <petscvec_kokkos.hpp>
 #include <sstream> //ostringstream
 
 #include "massMatrixIntegrator.hpp"
 #include <MeshField.hpp>
 
 #include <petscmat.h>
-#include <petscvec_kokkos.hpp> // Must be included before other PETSc headers
 
 // detect floating point exceptions
 #include <fenv.h>
