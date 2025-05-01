@@ -1,4 +1,4 @@
 /build
-*.sh
 *.ipynb
 main_bak.cpp
+/meshField_builds
