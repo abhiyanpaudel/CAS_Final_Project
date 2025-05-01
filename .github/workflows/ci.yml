@@ -29,6 +29,22 @@ jobs:
         echo "Repository directory: $GITHUB_WORKSPACE"
         echo "Contents of current directory:"
         ls -la
+        echo "Is config.sh in current directory?"
+        if [ -f "config.sh" ]; then
+          echo "YES - config.sh exists in $(pwd)"
+          cat config.sh | head -n 5
+        else
+          echo "NO - config.sh not found in $(pwd)"
+        fi
+        echo "Is config.sh in GITHUB_WORKSPACE?"
+        if [ -f "$GITHUB_WORKSPACE/config.sh" ]; then
+          echo "YES - config.sh exists in $GITHUB_WORKSPACE"
+          cat $GITHUB_WORKSPACE/config.sh | head -n 5
+        else
+          echo "NO - config.sh not found in $GITHUB_WORKSPACE"
+        fi
+        echo "Searching for config.sh in repository:"
+        find $GITHUB_WORKSPACE -name "config.sh" -type f || echo "No config.sh found in repository"
         echo "Environment variables:"
         env | sort
     
