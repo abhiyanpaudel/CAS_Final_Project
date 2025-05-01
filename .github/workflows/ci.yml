@@ -23,11 +23,30 @@ jobs:
       with:
         fetch-depth: 0  # Fetch all history for release notes generation
     
+    - name: Debug environment
+      run: |
+        echo "Working directory: $(pwd)"
+        echo "Repository directory: $GITHUB_WORKSPACE"
+        echo "Contents of current directory:"
+        ls -la
+        echo "Environment variables:"
+        env | sort
+    
     - name: Set up environment and dependencies
       run: |
         echo "Setting up environment for dependencies"
         # Source your configuration script that sets up all paths
-        source ./config.sh
+        if [ -f "./config.sh" ]; then
+          echo "config.sh found in current directory"
+          source ./config.sh
+        elif [ -f "$GITHUB_WORKSPACE/config.sh" ]; then
+          echo "config.sh found in GITHUB_WORKSPACE"
+          source $GITHUB_WORKSPACE/config.sh
+        else
+          echo "ERROR: config.sh not found!"
+          find $GITHUB_WORKSPACE -name "config.sh" -type f
+          exit 1
+        fi
         # Export variables needed by subsequent steps
         echo "DEVICE_ARCH=${DEVICE_ARCH}" >> $GITHUB_ENV
         echo "SOURCE_DIR=${SOURCE_DIR}" >> $GITHUB_ENV
@@ -92,21 +111,33 @@ jobs:
     - name: Build project using config.sh
       run: |
         # Use your existing config.sh script to build the project
-        # It has all the correct paths to dependencies
-        source ./config.sh
+        if [ -f "./config.sh" ]; then
+          source ./config.sh
+        else
+          source $GITHUB_WORKSPACE/config.sh
+        fi
+        # Add any build commands here if they're not already in config.sh
         
     - name: Run unit tests with CTest
       run: |
         cd build
         # Source environment to ensure tests can find dependencies
-        source ../config.sh
+        if [ -f "../config.sh" ]; then
+          source ../config.sh
+        else
+          source $GITHUB_WORKSPACE/config.sh
+        fi
         ctest --output-on-failure -V
     
     # Basic validation tests
     - name: Run validation tests
       run: |
         cd build
-        source ../config.sh
+        if [ -f "../config.sh" ]; then
+          source ../config.sh
+        else
+          source $GITHUB_WORKSPACE/config.sh
+        fi
         
         # Run the integration test with standard parameters
         ./point2MeshMap ../create_mesh/source_mesh/source_mesh.osh ../create_mesh/target_mesh/target_mesh.osh -mat_type aijkokkos -use_gpu_aware_mpi 0
