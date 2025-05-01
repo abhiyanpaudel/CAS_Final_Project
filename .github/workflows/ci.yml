@@ -55,7 +55,7 @@ DEPENDENCY_DIR="${DEPENDENCY_DIR:-/lore/mersoj2/laces-software/build}"
 export PETSC_DIR=$SOURCE_DIR/petsc/
 export PETSC_ARCH=linux-gnu-gpu-kokkos
 
-export NVCC_WRAPPER_DEFAULT_COMPILER=`which mpicxx`
+export NVCC_WRAPPER_DEFAULT_COMPILER=$(which mpicxx)
 EOF
           chmod +x $GITHUB_WORKSPACE/config.sh
           source $GITHUB_WORKSPACE/config.sh
