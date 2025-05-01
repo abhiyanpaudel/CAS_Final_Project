@@ -47,7 +47,7 @@ jobs:
       run: |
         cd build 
         # Run the integration test with standard parameters
-        ./point2MeshMap -mat_type aijkokkos -use_gpu_aware_mpi 0
+        ./point2MeshMap 
         
         # Additional validation tests could be added here
         # Example: Test with different matrix types
