@@ -2,7 +2,7 @@
 
 ![Badge License: BSD 3-Clause](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)
 
-A high-performance parallel utility for mapping point data (ignores mesh information) to finite element meshes using PETSc and Kokkos acceleration.
+A high-performance parallel utility for mapping point data (disregarding mesh information) to finite element meshes using PETSc and Kokkos acceleration.
 
 
 ## 🔍 Overview
@@ -14,17 +14,16 @@ Key features:
 - 🖥️ GPU acceleration using the Kokkos performance portability library
 - 📊 Sparse matrix operations using PETSc's AIJKokkos format
 - 🔺 Support for triangular finite element meshes (with plans for tetrahedral and other element types)
-- 📐 Barycentric coordinate-based interpolation for accurate field representation
 
 ## 📚 Dependencies
 
 Required libraries:
 
 - [Omega_h](https://github.com/sandialabs/omega_h) (branch `main`, commit `4764a9`):  
-  Unstructured mesh operations library for parallel adaptive mesh refinement, partitioning, and I/O.
+  Unstructured mesh operations library 
 
 - [PETSc](https://github.com/petsc/petsc) (branch `release`, commit `d31fe3`):  
-  Portable, Extensible Toolkit for Scientific Computation—scalable solvers and data structures for PDEs.
+  Portable, Extensible Toolkit for Scientific Computation—scalable solvers
 
 - [Kokkos](https://github.com/kokkos/kokkos) (branch `develop`, commit `4764a9`):  
   C++ programming model that delivers performance portability across CPUs, NVIDIA/AMD GPUs, and other architectures.
@@ -33,10 +32,10 @@ Required libraries:
   Performance-portable math kernels (sparse/dense linear algebra, graph routines) optimized for use with Kokkos and PETSc.
 
 - [MeshField](https://github.com/SCOREC/meshFields) (branch `cws/integration`, commit `237bfb`):  
-  GPU-friendly storage and interpolation of scalar/vector fields on unstructured meshes.
+  GPU-friendly unstructured mess field storage and interface.
 
 - [PCMS](https://github.com/SCOREC/pcms) (branch `develop`, commit `00eeca1`):  
-  Parallel coupler providing with efficient data and field tyransfer operations 
+  Parallel coupler providing with efficient data and field transfer operations 
 
 - [Gmsh](https://github.com/sasobadovinac/gmsh) (branch `main`, commit `cd594101`):  
   3D finite-element mesh generator with built-in pre- and post-processing tools.
@@ -49,8 +48,6 @@ Required libraries:
 > [!TIP]
 > Make sure to load appropriate modules for your system before installing dependencies. On SCOREC machines, you may need to load gcc, cuda, and mpi modules.
 
-> [!INFO]
-> If you're working on a system with pre-installed libraries, check with your system administrator for the correct paths to use.
 
 ```bash
 # Clone the repository
@@ -58,7 +55,7 @@ git clone git@github.com:abhiyanpaudel/CAS_Final_Project.git
 cd CAS_Final_Project
 ```
 
-If you need to manually configure the build, here's the CMake command that `config.sh` uses:
+If you need to manually configure the build, here's the CMake command:
 
 ```bash
 cmake -S . -B build \
@@ -81,7 +78,7 @@ cmake -S . -B build \
 cmake --build build -j8
 ```
 
-Replace the `/path/to/` entries with the actual paths on your system. For the reference system, these paths are set relative to the environment variables in `config.sh`.
+Replace the `/path/to/` entries with the actual paths on your system.
 
 > [!TIP]
 > The `-j8` flag enables parallel compilation with 8 threads. Adjust based on your system's capabilities.
@@ -107,8 +104,6 @@ cd build
 - `-ksp_type [solver]`: Specify KSP solver (e.g., cg, gmres)
 - `-pc_type [preconditioner]`: Specify preconditioner (e.g., jacobi, bjacobi)
 
-> [!TIP]
-> For optimal performance on GPUs, use `-mat_type aijkokkos` and enable GPU-aware MPI if supported by your system.
 
 ### Example Workflow
 
@@ -163,11 +158,7 @@ where:
 
 ## 🧪 Testing and Validation
 
-The provided test meshes in `create_mesh/` directory can be used for verifying the implementation. Running the mapper with these meshes serves as a basic functional test.
-
-> [!INFO]
-> More comprehensive test cases will be added.
-
+The provided test meshes in `create_mesh/` directory is used for verifying the implementation. The test case that maps source mesh to target mesh using this approach is in `tests/` directory.
 
 ## 📝 License
 
@@ -202,13 +193,6 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ```
-
-## Acknowledgments
-
-- The Omega_h and MeshField teams for their robust mesh handling libraries
-- PETSc development team for their high-performance linear algebra framework
-- Kokkos team for their performance portability layer
-- The developers of the mesh generating scripts in the create_mesh directory that facilitate testing and validation
 
 > [!TIP]
 > Check the documentation of each dependency for more detailed information on their usage and capabilities.
