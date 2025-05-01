@@ -1,0 +1,62 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  code-quality:
+    runs-on: self-hosted
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check environment
+      run: |
+        echo "Running on self-hosted runner"
+        echo "Available tools:"
+        which cmake cppcheck clang-format clang-tidy || true
+    
+    - name: Run cppcheck
+      run: |
+        if command -v cppcheck &> /dev/null; then
+          cppcheck --enable=all --inline-suppr --std=c++11 .
+        else
+          echo "cppcheck not available, skipping check"
+        fi
+      continue-on-error: true
+    
+    - name: Check code formatting
+      run: |
+        if command -v clang-format &> /dev/null; then
+          find . -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run --Werror
+        else
+          echo "clang-format not available, skipping check"
+        fi
+      continue-on-error: true
+    
+    - name: Check CMake configuration
+      run: |
+        if command -v cmake &> /dev/null; then
+          cmake -S . -B build_analyze -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        else
+          echo "cmake not available, skipping check"
+        fi
+      continue-on-error: true
+      
+    - name: Build project
+      run: |
+        # Source configuration if it exists
+        if [ -f "config.sh" ]; then
+          source config.sh
+        fi
+        
+        # Configure and build the project
+        mkdir -p build
+        cd build
+        cmake ..
+        make -j$(nproc || echo 2)
+      continue-on-error: false

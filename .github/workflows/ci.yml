@@ -1,0 +1,31 @@
+name: Particle2Mesh CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: self-hosted
+    
+    steps:
+    - uses: actions/checkout@v3
+      
+    - name: Create build directory
+      run: mkdir -p build
+      
+    - name: Build project
+      run: |
+        cd build
+        cmake ..
+        make -j8
+        
+    - name: Run tests
+      run: |
+        cd build
+        ./point2MeshMapping ../create_mesh/source_mesh/source_mesh.osh ../create_mesh/target_mesh/target_mesh.osh -mat_type aijkokkos use_gpu_aware_mpi 0
+
+        
