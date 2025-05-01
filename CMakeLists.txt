@@ -29,10 +29,10 @@ target_link_libraries(point2MeshMap PUBLIC
                     meshfields::meshfields
                     ${PETSC_LIBRARIES})
 
-target_include_directories(point2MeshMapping PUBLIC 
+target_include_directories(point2MeshMap PUBLIC 
                           ${CMAKE_CURRENT_SOURCE_DIR}
                           ${PETSC_INCLUDES})
 
-include(Ctest)
+include(CTest)
 include(Catch)
-catch_discover_tests(tests)
+catch_discover_tests(point2MeshMap)

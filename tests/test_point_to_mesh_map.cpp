@@ -56,8 +56,8 @@ TEST_CASE("constant function mapping", "[massphi][deg0]") {
   REQUIRE(tgt_coords.size() > 0);
 
   // Degree 0 => constant
-  auto src_vals = evalFuncValues(src_coords, 0);
-  auto exact    = evalFuncValues(tgt_coords, 0);
+  auto src_vals = evalFuncValues(src_coords, 2, 0);
+  auto exact    = evalFuncValues(tgt_coords, 2, 0);
 
   auto sol = solveMassPhiSystem(tgt_mesh, src_coords, src_vals);
 
@@ -67,7 +67,7 @@ TEST_CASE("constant function mapping", "[massphi][deg0]") {
   double tol = 1e-8;
   for (std::size_t i = 0; i < host_sol.size(); ++i) {
     CAPTURE(i, host_exact[i], host_sol[i]);
-    CHECK(host_sol[i] == Approx(host_exact[i]).margin(tol));
+    CHECK(host_sol[i] == Catch::Approx(host_exact[i]).margin(tol));
   }
 
 }
@@ -86,8 +86,8 @@ TEST_CASE("linear function mapping", "[massphi][deg1]") {
   auto tgt_coords = tgt_mesh.coords();
 
   // Degree 1 => linear
-  auto src_vals = evalFuncValues(src_coords, 1);
-  auto exact    = evalFuncValues(tgt_coords, 1);
+  auto src_vals = evalFuncValues(src_coords, 2, 1);
+  auto exact    = evalFuncValues(tgt_coords, 2, 1);
 
   auto sol = solveMassPhiSystem(tgt_mesh, src_coords, src_vals);
 
@@ -97,7 +97,7 @@ TEST_CASE("linear function mapping", "[massphi][deg1]") {
   double tol = 1e-7;
   for (std::size_t i = 0; i < sol.size(); ++i) {
     CAPTURE(i, exact[i], sol[i]);
-    CHECK(host_sol[i] == Approx(host_exact[i]).margin(tol));
+    CHECK(host_sol[i] == Catch::Approx(host_exact[i]).margin(tol));
   }
 
 }
