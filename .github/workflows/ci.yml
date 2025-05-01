@@ -153,47 +153,5 @@ jobs:
         name: particle2mesh-artifacts
         path: release-artifacts
     
-    - name: Create Release
-      run: |
-        RELEASE_TAG="${{ github.event.inputs.release_tag }}"
-        
-        if [ -z "$RELEASE_TAG" ]; then
-          echo "No release tag specified, skipping release creation"
-          exit 0
-        fi
-        
-        echo "Creating release $RELEASE_TAG"
-        
-        # Create a release notes file
-        echo "# Particle2Mesh Mapping Release $RELEASE_TAG" > release_notes.md
-        echo "" >> release_notes.md
-        echo "## Changes in this release:" >> release_notes.md
-        
-        # Get commit messages since the last tag
-        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-        if [ -n "$LAST_TAG" ]; then
-          echo "Generating changelog since $LAST_TAG"
-          git log --pretty=format:"- %s" $LAST_TAG..HEAD >> release_notes.md
-        else
-          echo "No previous tags found, including all commit messages"
-          git log --pretty=format:"- %s" >> release_notes.md
-        fi
-        
-        # Create a tarball of the release artifacts
-        cd release-artifacts
-        tar -czf ../particle2mesh-${RELEASE_TAG}.tar.gz ./*
-        cd ..
-        
-        echo "Release archive created: particle2mesh-${RELEASE_TAG}.tar.gz"
-        echo "Release notes created in release_notes.md"
-        
-        # Here you would typically use the GitHub API to create the release
-        # For a self-hosted runner, you might need to handle this differently
-        # For example, upload to an internal artifact repository
-        
-        echo "Release $RELEASE_TAG created successfully"
-        
-        # Optional: Clean up
-        rm -rf release-artifacts
 
 
