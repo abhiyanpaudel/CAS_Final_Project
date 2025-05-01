@@ -1,3 +1,15 @@
+/**
+ * @file calculateMassMatrix.hpp
+ * @brief Functions for calculating mass matrices on finite element meshes
+ * @author [Cameron Smith]
+ * @date April, 2025
+ *
+ * This file contains functions for creating and computing mass matrices
+ * for finite element calculations using Omega_h mesh structures and PETSc.
+ * The mass matrix is a fundamental component for solving partial differential
+ * equations with the finite element method.
+ */
+
 #ifndef COMPUTING_AT_SCALE_CALCULATE_MASS_MATRIX_HPP
 #define COMPUTING_AT_SCALE_CALCULATE_MASS_MATRIX_HPP
 
@@ -32,6 +44,14 @@ using MemorySpace = Kokkos::DefaultExecutionSpace::memory_space;
 
 using namespace Omega_h;
 
+/**
+ * @brief Sets a constant value for a field at all mesh vertices
+ *
+ * @tparam ShapeField Type of the shape field
+ * @param mesh The Omega_h mesh
+ * @param field The field to set values for
+ * @param val The constant value to set at all vertices
+ */
 template <typename ShapeField>
 void setFieldAtVertices(Omega_h::Mesh &mesh, ShapeField field, const MeshField::Real val) {
   const auto MeshDim = mesh.dim();
@@ -42,6 +62,17 @@ void setFieldAtVertices(Omega_h::Mesh &mesh, ShapeField field, const MeshField::
                           setFieldAtVertices, "setFieldAtVertices");
 }
 
+/**
+ * @brief Creates a PETSc matrix based on mesh connectivity
+ *
+ * This function creates a sparse matrix with the proper sparsity pattern
+ * according to the mesh connectivity. The matrix size corresponds to the
+ * number of vertices in the mesh.
+ *
+ * @param mesh The Omega_h mesh to create the matrix from
+ * @param[out] A Pointer to the PETSc matrix to be created
+ * @return PetscErrorCode PETSc error code (PETSC_SUCCESS if successful)
+ */
 static PetscErrorCode CreateMatrix(Omega_h::Mesh& mesh, Mat *A) {
   const auto numNodesPerTri = 3; //FIXME query the mesh
   const auto matSize = numNodesPerTri*numNodesPerTri*mesh.nelems();
@@ -67,7 +98,18 @@ static PetscErrorCode CreateMatrix(Omega_h::Mesh& mesh, Mat *A) {
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-
+/**
+ * @brief Calculates the mass matrix for a given mesh
+ *
+ * This function constructs a mass matrix based on the provided mesh using
+ * a finite element approach. It creates coordinate field elements, builds
+ * the mass matrix using the massMatrixIntegrator, and sets up the PETSc matrix
+ * with appropriate values.
+ *
+ * @param mesh The Omega_h mesh to calculate the mass matrix for
+ * @param[out] mass_out Pointer to the resulting mass matrix
+ * @return PetscErrorCode PETSc error code (PETSC_SUCCESS if successful)
+ */
 inline PetscErrorCode calculateMassMatrix(Omega_h::Mesh& mesh, Mat *mass_out){ 
 
   MeshField::OmegahMeshField<ExecutionSpace, MeshField::KokkosController> omf(
@@ -102,4 +144,4 @@ inline PetscErrorCode calculateMassMatrix(Omega_h::Mesh& mesh, Mat *mass_out){
   PetscFunctionReturn(PETSC_SUCCESS);
 }
 
-#endif 
+#endif

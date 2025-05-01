@@ -1,3 +1,14 @@
+/**
+ * @file massPhiMatrixSolver.hpp
+ * @brief Solver for the Mass-Phi linear system in particle-to-mesh mapping
+ * @author [Author Name]
+ * @date May 1, 2025
+ *
+ * This file contains functions to solve the linear system Mass * x = Phi * source_values
+ * for mapping field values from source points to a target mesh using a finite
+ * element approach with PETSc and Kokkos for GPU acceleration.
+ */
+
 #ifndef MASS_PHI_SOLVER_HPP
 #define MASS_PHI_SOLVER_HPP
 
@@ -17,7 +28,16 @@
 #include "calculateMassMatrix.hpp"
 #include "calculatePhiMatrix.hpp"
 
-// Wrap host data into a Kokkos Vec
+/**
+ * @brief Creates a PETSc vector with Kokkos backend from Omega_h data
+ *
+ * Converts Omega_h::Reals data into a PETSc vector that can be used with
+ * Kokkos-enabled PETSc operations for GPU acceleration.
+ *
+ * @param len Length of the vector to create
+ * @param data Source Omega_h::Reals data
+ * @return Vec PETSc vector initialized with the data
+ */
 static Vec createKokkosVec(PetscInt len, const Omega_h::Reals &data) {
   std::cout << "DEBUG: createKokkosVec - Creating vector of length " << len << std::endl;
   Vec v;
@@ -42,7 +62,16 @@ static Vec createKokkosVec(PetscInt len, const Omega_h::Reals &data) {
   return v;
 }
 
-// Matrix-vector multiply on GPU
+/**
+ * @brief Performs matrix-vector multiplication using PETSc and Kokkos
+ *
+ * Multiplies the matrix M by the vector u to produce a new vector.
+ * Operations are performed on GPU if available through Kokkos.
+ *
+ * @param M The matrix
+ * @param u The vector to multiply with
+ * @return Vec Result of M * u
+ */
 static Vec multiplyMatVec(Mat M, Vec u) {
   std::cout << "DEBUG: multiplyMatVec - Start" << std::endl;
   PetscInt m,n;
@@ -64,7 +93,16 @@ static Vec multiplyMatVec(Mat M, Vec u) {
   return b;
 }
 
-// Solve A x = b on GPU using KSP
+/**
+ * @brief Solves a linear system Ax = b using PETSc's KSP solvers
+ *
+ * Uses PETSc's Krylov Subspace solvers to find x in Ax = b.
+ * The solver can be configured through PETSc runtime options.
+ *
+ * @param A The system matrix
+ * @param b The right-hand side vector
+ * @return Vec Solution vector x
+ */
 static Vec solveLinearSystem(Mat A, Vec b) {
   std::cout << "DEBUG: solveLinearSystem - Start" << std::endl;
   PetscInt m,n;
@@ -102,7 +140,15 @@ static Vec solveLinearSystem(Mat A, Vec b) {
   return x;
 }
 
- 
+/**
+ * @brief Constructs the mass matrix for the target mesh
+ *
+ * Creates a mass matrix using the calculateMassMatrix function.
+ * The mass matrix represents the inner product of basis functions.
+ *
+ * @param mesh The target Omega_h mesh
+ * @return Mat PETSc matrix representing the mass matrix
+ */
 static Mat buildMassMatrixKokkos(Omega_h::Mesh& mesh){
   std::cout << "DEBUG: buildMassMatrixKokkos - Building mass matrix" << std::endl;
   Mat mass;
@@ -112,6 +158,16 @@ static Mat buildMassMatrixKokkos(Omega_h::Mesh& mesh){
   return mass;
 }
 
+/**
+ * @brief Constructs the Phi matrix for mapping from source points to target mesh
+ *
+ * Creates the Phi matrix using the calculatePhiMatrix function.
+ * The Phi matrix defines how source point values are mapped to mesh vertices.
+ *
+ * @param mesh The target Omega_h mesh
+ * @param src_coordinates Coordinates of the source points
+ * @return Mat PETSc matrix representing the Phi mapping matrix
+ */
 static Mat buildPhiMatrixKokkos(Omega_h::Mesh& mesh,
 								const Omega_h::Reals& src_coordinates){
   std::cout << "DEBUG: buildPhiMatrixKokkos - Building phi matrix" << std::endl;
@@ -122,7 +178,25 @@ static Mat buildPhiMatrixKokkos(Omega_h::Mesh& mesh,
   return phi;
 }
 
-// High-level driver: solve mass * x = Phi * source_values
+/**
+ * @brief Main solver function that maps source point values to a target mesh
+ *
+ * Solves the linear system Mass * x = Phi * source_values to find the 
+ * coefficients that represent the best mapping from source point values
+ * to the target mesh in a finite element sense.
+ * 
+ * Algorithm:
+ * 1. Build the mass and Phi matrices
+ * 2. Compute right-hand side b = Phi * source_values
+ * 3. Solve Mass * x = b for x
+ * 4. Return x as the solution vector
+ *
+ * @param mesh The target Omega_h mesh
+ * @param source_coordinates Coordinates of the source points
+ * @param source_values Values at the source points
+ * @return Omega_h::Reals Solution vector representing mapped values at mesh vertices
+ * @throws std::runtime_error If source_values size doesn't match source_coordinates
+ */
 Omega_h::Reals solveMassPhiSystem(
   Omega_h::Mesh &mesh,
   const Omega_h::Reals &source_coordinates,

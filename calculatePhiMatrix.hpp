@@ -1,3 +1,13 @@
+/**
+ * @file calculatePhiMatrix.hpp
+ * @brief Functions to calculate Phi matrix 
+ * @author [Abhiyan Paaudel]
+ * @date May 1, 2025
+ *
+ * This file contains functions for creating the Phi matrix 
+ * The Phi matrix represents the evaluation of basis functions at particle positions.
+ */
+
 #ifndef COMPUTING_AT_SCALE_RHS_MATRIX_FUNCTIONS_HPP
 #define COMPUTING_AT_SCALE_RHS_MATRIX_FUNCTIONS_HPP
 
@@ -12,6 +22,16 @@
 #include <Kokkos_Core.hpp>
 #include <cmath> // For std::abs
 
+/**
+ * @brief Finds the mesh elements containing each source point
+ * 
+ * Uses a grid-based point search algorithm to efficiently locate the 
+ * triangle element containing each source point in the mesh.
+ * 
+ * @param mesh The target Omega_h mesh
+ * @param source_coordinates Coordinates of the source points
+ * @return Omega_h::LOs Array of element IDs corresponding to each source point
+ */
 Omega_h::LOs find_element_from_source_points(Omega_h::Mesh& mesh, const Omega_h::Reals& source_coordinates){
 	
 	const auto dim = mesh.dim();
@@ -41,11 +61,28 @@ Omega_h::LOs find_element_from_source_points(Omega_h::Mesh& mesh, const Omega_h:
 	return Omega_h::read(element_ids);
 }
 
+/**
+ * @brief Structure to hold row indices and values for matrix construction
+ * 
+ * Contains arrays for the row indices (vertices) and the corresponding 
+ * values (shape function evaluations) used in the Phi matrix construction.
+ */
 struct Results{
-	Kokkos::View<PetscInt*[3]> row_ids;
-	Kokkos::View<PetscScalar*[3]> vals;
+	Kokkos::View<PetscInt*[3]> row_ids;    /**< Row indices for each source point and vertex */
+	Kokkos::View<PetscScalar*[3]> vals;    /**< Shape function values for each source point and vertex */
 };
 
+/**
+ * @brief Computes row indices and shape function values for each source point
+ * 
+ * For each source point, finds the containing element, identifies the element's
+ * vertices (row indices), and computes the barycentric coordinates (shape function values)
+ * of the source point within that element.
+ * 
+ * @param mesh The target Omega_h mesh
+ * @param source_coordinates Coordinates of the source points
+ * @return Results Structure containing row indices and shape function values
+ */
 Results get_row_ids_and_values(Omega_h::Mesh& mesh, const Omega_h::Reals& source_coordinates){
 	
 	std::cout << "DEBUG: get_row_ids_and_values - Start" << std::endl;
@@ -63,12 +100,12 @@ Results get_row_ids_and_values(Omega_h::Mesh& mesh, const Omega_h::Reals& source
 	std::cout << "DEBUG: Element IDs found" << std::endl;
 	
 
-	// allocate per-column metadata for valid points only
+	// allocate per-column metadata 
 	std::cout << "DEBUG: Allocating row_ids and vals arrays" << std::endl;
 	Kokkos::View<PetscInt*[3]> row_ids("row indices", nsources, 3); 
 	Kokkos::View<PetscScalar*[3]> vals("nonzero values", nsources, 3);
 	
-	// fill row_ids and vals for valid points only
+	// fill row_ids and vals 
 	std::cout << "DEBUG: Computing shape functions and filling arrays" << std::endl;
 	Omega_h::parallel_for(nsources, OMEGA_H_LAMBDA(const int id) {	
 		
@@ -88,7 +125,6 @@ Results get_row_ids_and_values(Omega_h::Mesh& mesh, const Omega_h::Reals& source
 		// Calculate barycentric coordinates
 		auto barycentric_coordinate = barycentric_from_global<2,2>(global_coordinate, current_el_vert_coords);
 		
-		// Print barycentric coordinates (only in device code with atomics to avoid race conditions)
 		if (id < 10) {  // Only print for the first 10 points to avoid too much output
 			printf("Point %d barycentric: [%f, %f, %f]\n", 
 				id, 
@@ -117,6 +153,24 @@ Results get_row_ids_and_values(Omega_h::Mesh& mesh, const Omega_h::Reals& source
 	return Results{row_ids, vals}; 
 }
 
+/**
+ * @brief Calculates the Phi matrix for mapping from source points to a target mesh
+ *
+ * Creates a sparse matrix that is used to map field values from source points to the target mesh.
+ * The matrix is constructed in CSR format using row indices and values from shape functions.
+ * This implements a finite element projection of point data onto the mesh.
+ * 
+ * Algorithm:
+ * 1. Get row indices and values for each source point
+ * 2. Count non-zeros per row and create CSR row pointers (ia array)
+ * 3. Fill column indices (ja array) and values (a array)
+ * 4. Create the PETSc matrix with these arrays
+ * 
+ * @param mesh The target Omega_h mesh
+ * @param source_coordinates Coordinates of the source points
+ * @param[out] Phi_out Pointer to the resulting Phi matrix
+ * @return PetscErrorCode PETSc error code (PETSC_SUCCESS if successful)
+ */
 inline PetscErrorCode calculatePhiMatrix(
     Omega_h::Mesh& mesh,
     const Omega_h::Reals& source_coordinates,
