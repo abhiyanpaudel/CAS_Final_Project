@@ -158,7 +158,6 @@ inline PetscErrorCode calculatePhiMatrix(
   if (total_nnz_values != nnz) {
     std::cerr << "ERROR: mismatched total nonzeros!\n";
   }
-  // mirror and dump row-pointers
   auto h_ia = Kokkos::create_mirror_view(ia);
   Kokkos::deep_copy(h_ia, ia);
   std::cout << "DEBUG: ia prefix [0..10] = ";
