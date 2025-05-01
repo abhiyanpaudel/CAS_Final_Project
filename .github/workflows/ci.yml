@@ -46,7 +46,15 @@ jobs:
     - name: Run unit tests with CTest
       run: |
         cd build
-        ctest --output-on-failure -V
+        # Source environment to ensure tests can find dependencies
+        if [ -f "../config.sh" ]; then
+          source ../config.sh
+        else
+          source $GITHUB_WORKSPACE/config.sh
+        fi
+        
+        # Use the full path to ctest from SCOREC installation
+        /opt/scorec/cmake/3.20.0/bin/ctest --output-on-failure -V
     
     # Basic validation tests
     - name: Run validation tests
