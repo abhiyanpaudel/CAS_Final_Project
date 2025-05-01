@@ -32,25 +32,6 @@ jobs:
         echo "Environment variables:"
         env | sort
     
-    - name: Set up environment and dependencies
-      run: |
-        echo "Setting up environment for dependencies"
-        # Source configuration script
-        if [ -f "$GITHUB_WORKSPACE/config.sh" ]; then
-          echo "Using config.sh from repository"
-          source $GITHUB_WORKSPACE/config.sh
-        else
-          echo "ERROR: config.sh not found!"
-          exit 1
-        fi
-        
-        # Export variables needed by subsequent steps
-        echo "DEVICE_ARCH=${DEVICE_ARCH}" >> $GITHUB_ENV
-        echo "SOURCE_DIR=${SOURCE_DIR}" >> $GITHUB_ENV
-        echo "BUILD_DIR=${BUILD_DIR}" >> $GITHUB_ENV
-        echo "DEPENDENCY_DIR=${DEPENDENCY_DIR}" >> $GITHUB_ENV
-        echo "PETSC_DIR=${PETSC_DIR}" >> $GITHUB_ENV
-        echo "PETSC_ARCH=${PETSC_ARCH}" >> $GITHUB_ENV
       
     - name: Build project using config.sh
       run: |
@@ -65,12 +46,6 @@ jobs:
     - name: Run unit tests with CTest
       run: |
         cd build
-        # Source environment to ensure tests can find dependencies
-        if [ -f "../config.sh" ]; then
-          source ../config.sh
-        else
-          source $GITHUB_WORKSPACE/config.sh
-        fi
         ctest --output-on-failure -V
     
     # Basic validation tests
