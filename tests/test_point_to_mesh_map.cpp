@@ -8,7 +8,7 @@
 #include <fenv.h>
 #include <petsc.h>
 #include <petscmat_kokkos.hpp>
-#include <petscvec_kokkos.hpp>
+#include <petscvec_kokkos.hpp> // Must be included before other PETSc headers
 #include <string>
 
 Omega_h::Reals evalFuncValues(const Omega_h::Reals &coordinates, const int dim,

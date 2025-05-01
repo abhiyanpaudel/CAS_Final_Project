@@ -23,7 +23,7 @@
 #include <petscmat_kokkos.hpp>
 #include <petscsys.h>
 #include <petscvec.h>
-#include <petscvec_kokkos.hpp>
+#include <petscvec_kokkos.hpp> // Must be included before other PETSc headers
 
 #include "calculateMassMatrix.hpp"
 #include "calculatePhiMatrix.hpp"

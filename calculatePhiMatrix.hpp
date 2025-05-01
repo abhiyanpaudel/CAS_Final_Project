@@ -21,7 +21,7 @@
 #include <cmath> // For std::abs
 #include <pcms/point_search.h>
 #include <petscmat.h>
-#include <petscvec_kokkos.hpp>
+#include <petscvec_kokkos.hpp> // Must be included before other PETSc headers
 
 /**
  * @brief Finds the mesh elements containing each source point
