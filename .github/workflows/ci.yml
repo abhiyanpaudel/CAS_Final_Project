@@ -52,59 +52,6 @@ jobs:
         echo "PETSC_DIR=${PETSC_DIR}" >> $GITHUB_ENV
         echo "PETSC_ARCH=${PETSC_ARCH}" >> $GITHUB_ENV
       
-    - name: Verify dependencies
-      run: |
-        echo "=== Verifying dependencies ==="
-        echo "PETSc:"
-        echo "  PETSC_DIR: $PETSC_DIR"
-        echo "  PETSC_ARCH: $PETSC_ARCH"
-        if [ ! -d "$PETSC_DIR" ] || [ ! -d "$PETSC_DIR/$PETSC_ARCH" ]; then
-          echo "ERROR: PETSc not found at $PETSC_DIR/$PETSC_ARCH"
-          exit 1
-        fi
-        
-        echo "Kokkos:"
-        KOKKOS_ROOT="$BUILD_DIR/${DEVICE_ARCH}/kokkos-meshField/install"
-        echo "  KOKKOS_ROOT: $KOKKOS_ROOT"
-        if [ ! -d "$KOKKOS_ROOT" ]; then
-          echo "ERROR: Kokkos not found at $KOKKOS_ROOT"
-          exit 1
-        fi
-        
-        echo "Omega_h:"
-        OMEGA_H_DIR="$BUILD_DIR/${DEVICE_ARCH}/omega_h-meshField/install"
-        echo "  OMEGA_H_DIR: $OMEGA_H_DIR"
-        if [ ! -d "$OMEGA_H_DIR" ]; then
-          echo "ERROR: Omega_h not found at $OMEGA_H_DIR"
-          exit 1
-        fi
-        
-        echo "MeshFields:"
-        MESHFIELDS_DIR="$BUILD_DIR/${DEVICE_ARCH}/meshField/install"
-        echo "  MESHFIELDS_DIR: $MESHFIELDS_DIR"
-        if [ ! -d "$MESHFIELDS_DIR" ]; then
-          echo "ERROR: MeshFields not found at $MESHFIELDS_DIR"
-          exit 1
-        fi
-        
-        echo "PCMS:"
-        PCMS_ROOT="$BUILD_DIR/${DEVICE_ARCH}/pcms-meshField/install"
-        echo "  PCMS_ROOT: $PCMS_ROOT"
-        if [ ! -d "$PCMS_ROOT" ]; then
-          echo "ERROR: PCMS not found at $PCMS_ROOT"
-          exit 1
-        fi
-        
-        echo "Catch2:"
-        CATCH2_ROOT="$DEPENDENCY_DIR/Catch2/install"
-        echo "  CATCH2_ROOT: $CATCH2_ROOT"
-        if [ ! -d "$CATCH2_ROOT" ]; then
-          echo "ERROR: Catch2 not found at $CATCH2_ROOT"
-          exit 1
-        fi
-        
-        echo "Environment check complete!"
-      
     - name: Build project using config.sh
       run: |
         # Use your existing config.sh script to build the project
