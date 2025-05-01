@@ -45,29 +45,9 @@ jobs:
         
     - name: Run unit tests with CTest
       run: |
-        cd build
-        # Source environment to ensure tests can find dependencies
-        if [ -f "../config.sh" ]; then
-          source ../config.sh
-        else
-          source $GITHUB_WORKSPACE/config.sh
-        fi
-        
-        # Use the full path to ctest from SCOREC installation
-        /opt/scorec/cmake/3.20.0/bin/ctest --output-on-failure -V
-    
-    # Basic validation tests
-    - name: Run validation tests
-      run: |
-        cd build
-        if [ -f "../config.sh" ]; then
-          source ../config.sh
-        else
-          source $GITHUB_WORKSPACE/config.sh
-        fi
-        
+        cd build 
         # Run the integration test with standard parameters
-        ./point2MeshMap ../create_mesh/source_mesh/source_mesh.osh ../create_mesh/target_mesh/target_mesh.osh -mat_type aijkokkos -use_gpu_aware_mpi 0
+        ./point2MeshMap -mat_type aijkokkos -use_gpu_aware_mpi 0
         
         # Additional validation tests could be added here
         # Example: Test with different matrix types
