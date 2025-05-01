@@ -33,7 +33,7 @@
 #include <MeshField.hpp>
 
 #include <petscmat.h>
-#include <petscvec_kokkos.hpp>
+#include <petscvec_kokkos.hpp> // Must be included before other PETSc headers
 
 // detect floating point exceptions
 #include <fenv.h>
