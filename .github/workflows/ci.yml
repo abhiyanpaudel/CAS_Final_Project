@@ -35,31 +35,15 @@ jobs:
     - name: Set up environment and dependencies
       run: |
         echo "Setting up environment for dependencies"
-        # Source your configuration script that sets up all paths
-        if [ -f "./config.sh" ]; then
-          echo "config.sh found in current directory"
-          source ./config.sh
-        elif [ -f "$GITHUB_WORKSPACE/config.sh" ]; then
-          echo "config.sh found in GITHUB_WORKSPACE"
+        # Source configuration script
+        if [ -f "$GITHUB_WORKSPACE/config.sh" ]; then
+          echo "Using config.sh from repository"
           source $GITHUB_WORKSPACE/config.sh
         else
-          echo "config.sh not found, creating a minimal version for CI"
-          cat > $GITHUB_WORKSPACE/config.sh << 'EOF'
-# Minimal config.sh for CI environment
-source /lore/paudea/scripts/loads-rhel9.sh
-
-export DEVICE_ARCH=ADA89-meshField
-SOURCE_DIR="${SOURCE_DIR:-/lore/paudea/sources}"
-BUILD_DIR="${BUILD_DIR:-/lore/paudea/build}"
-DEPENDENCY_DIR="${DEPENDENCY_DIR:-/lore/mersoj2/laces-software/build}"
-export PETSC_DIR=$SOURCE_DIR/petsc/
-export PETSC_ARCH=linux-gnu-gpu-kokkos
-
-export NVCC_WRAPPER_DEFAULT_COMPILER=$(which mpicxx)
-EOF
-          chmod +x $GITHUB_WORKSPACE/config.sh
-          source $GITHUB_WORKSPACE/config.sh
+          echo "ERROR: config.sh not found!"
+          exit 1
         fi
+        
         # Export variables needed by subsequent steps
         echo "DEVICE_ARCH=${DEVICE_ARCH}" >> $GITHUB_ENV
         echo "SOURCE_DIR=${SOURCE_DIR}" >> $GITHUB_ENV
