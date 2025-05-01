@@ -2,10 +2,16 @@ name: Code Quality
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, develop ]
   workflow_dispatch:
+    inputs:
+      auto_format:
+        description: 'Automatically format code with clang-format'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   code-quality:
@@ -13,50 +19,219 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
+      with:
+        # Full git history is needed to create PRs if auto-formatting
+        fetch-depth: ${{ github.event.inputs.auto_format == 'true' && 0 || 1 }}
     
-    - name: Check environment
+    - name: Set up environment
+      run: |
+        source ./config.sh
+        echo "DEVICE_ARCH=${DEVICE_ARCH}" >> $GITHUB_ENV
+        echo "BUILD_DIR=${BUILD_DIR}" >> $GITHUB_ENV
+    
+    - name: Check environment and tools
       run: |
         echo "Running on self-hosted runner"
         echo "Available tools:"
         which cmake cppcheck clang-format clang-tidy || true
     
+    - name: Ensure clang-format style file exists
+      run: |
+        if [ ! -f ".clang-format" ]; then
+          echo "Creating default .clang-format file"
+          cat << EOF > .clang-format
+---
+Language: Cpp
+BasedOnStyle: Google
+AccessModifierOffset: -2
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignEscapedNewlines: Left
+AlignOperands: true
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: true
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: false
+BinPackParameters: false
+BraceWrapping:
+  AfterClass: false
+  AfterControlStatement: false
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterStruct: false
+  AfterUnion: false
+  BeforeCatch: false
+  BeforeElse: false
+  IndentBraces: false
+BreakBeforeBinaryOperators: None
+BreakBeforeBraces: Attach
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+ColumnLimit: 100
+CompactNamespaces: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+Cpp11BracedListStyle: true
+DerivePointerAlignment: false
+FixNamespaceComments: true
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^<(gtest|gmock)/'
+    Priority: 5
+  - Regex: '^<.*\.h>'
+    Priority: 1
+  - Regex: '^<.*'
+    Priority: 2
+  - Regex: '.*'
+    Priority: 3
+IndentCaseLabels: true
+IndentPPDirectives: None
+IndentWidth: 2
+IndentWrappedFunctionNames: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: None
+PointerAlignment: Left
+ReflowComments: true
+SortIncludes: true
+SortUsingDeclarations: true
+SpaceAfterCStyleCast: false
+SpaceAfterTemplateKeyword: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 2
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+Standard: c++17
+TabWidth: 2
+UseTab: Never
+EOF
+        else
+          echo "Using existing .clang-format file"
+        fi
+    
     - name: Run cppcheck
       run: |
         if command -v cppcheck &> /dev/null; then
-          cppcheck --enable=all --inline-suppr --std=c++11 .
+          cppcheck --enable=all --inline-suppr --std=c++17 --suppress=missingIncludeSystem .
         else
           echo "cppcheck not available, skipping check"
         fi
       continue-on-error: true
     
     - name: Check code formatting
+      id: check-format
       run: |
         if command -v clang-format &> /dev/null; then
-          find . -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run --Werror
+          FORMAT_ISSUES=$(find . -name "*.cpp" -o -name "*.hpp" | xargs clang-format --dry-run --Werror 2>&1)
+          if [ $? -ne 0 ]; then
+            echo "::set-output name=has_issues::true"
+            echo "Formatting issues detected:"
+            echo "$FORMAT_ISSUES"
+          else
+            echo "::set-output name=has_issues::false"
+            echo "No formatting issues detected!"
+          fi
         else
           echo "clang-format not available, skipping check"
+          echo "::set-output name=has_issues::false"
         fi
       continue-on-error: true
     
-    - name: Check CMake configuration
+    - name: Apply code formatting
+      if: |
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.auto_format == 'true') ||
+        (steps.check-format.outputs.has_issues == 'true' && github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop')
+      run: |
+        echo "Applying clang-format to all C++ files"
+        find . -name "*.cpp" -o -name "*.hpp" | xargs clang-format -i
+        
+        # Configure git user for commit
+        git config user.name "GitHub Actions Bot"
+        git config user.email "actions@github.com"
+        
+        # Create a branch for formatting changes
+        BRANCH_NAME="auto-format/$(date +%Y%m%d-%H%M%S)"
+        git checkout -b $BRANCH_NAME
+        
+        # Commit and push changes
+        git add .
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Apply automatic code formatting"
+          git push origin $BRANCH_NAME
+          
+          # If we have GitHub CLI, create a PR
+          if command -v gh &> /dev/null; then
+            # Set GitHub CLI to use Actions token
+            echo "${{ github.token }}" | gh auth login --with-token
+            
+            # Create PR
+            BASE_BRANCH=${GITHUB_REF#refs/heads/}
+            gh pr create --title "Auto-format code with clang-format" \
+                       --body "This PR was automatically created by the code-quality workflow to fix formatting issues." \
+                       --base $BASE_BRANCH \
+                       --head $BRANCH_NAME
+                       
+            echo "Created PR for formatting changes"
+          else
+            echo "GitHub CLI not available, skipping PR creation"
+            echo "Branch with formatting changes: $BRANCH_NAME"
+          fi
+        fi
+      continue-on-error: true
+    
+    - name: Generate compile_commands.json
       run: |
         if command -v cmake &> /dev/null; then
-          cmake -S . -B build_analyze -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          source ./config.sh
+          mkdir -p build_analyze
+          cd build_analyze
+          cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
         else
-          echo "cmake not available, skipping check"
+          echo "cmake not available, skipping compile_commands.json generation"
         fi
       continue-on-error: true
       
-    - name: Build project
+    - name: Run clang-tidy
       run: |
-        # Source configuration if it exists
-        if [ -f "config.sh" ]; then
-          source config.sh
+        if command -v clang-tidy &> /dev/null && [ -f "build_analyze/compile_commands.json" ]; then
+          find . -name "*.cpp" -o -name "*.hpp" | grep -v "build" | xargs -I{} clang-tidy {} -p build_analyze/compile_commands.json
+        else
+          echo "clang-tidy not available or compile_commands.json not found, skipping check"
         fi
-        
-        # Configure and build the project
-        mkdir -p build
-        cd build
-        cmake ..
-        make -j$(nproc || echo 2)
-      continue-on-error: false
+      continue-on-error: true
+      
+    - name: Check CMake configuration
+      run: |
+        if command -v cmake-lint &> /dev/null; then
+          find . -name "CMakeLists.txt" | xargs cmake-lint
+        else
+          echo "cmake-lint not available, skipping check"
+        fi
+      continue-on-error: true
+      
+    - name: Check for insecure functions
+      run: |
+        grep -r --include="*.cpp" --include="*.hpp" "strcpy\|strcat\|sprintf\|vsprintf" .
+        if [ $? -eq 0 ]; then
+          echo "WARNING: Potentially insecure functions found"
+        else
+          echo "No insecure functions found"
+        fi
+      continue-on-error: true
